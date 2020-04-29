@@ -19,7 +19,7 @@ source ~/.profile
 5. テストケースの作成を終えたいときは、`Input?:`の時に`Enter`を入力する。
 6. 生成物として、`num.in`, `num.out`, `testcase.zip`が生成される。
 
-# How to use with special judge
+## How to use with special judge
 上記の1, 3, 4, 5は同じ。
 
 2'. `joho-ta-tools spj`でディレクトリ内の`main.cpp`がコンパイルされ、入力待ちの状態になる。
