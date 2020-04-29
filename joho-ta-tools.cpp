@@ -48,7 +48,6 @@ void make_sample(std::string fname)
             {
                 ofs << s << std::endl;
             }
-            ofs << std::endl;
             std::cout << "Output" << i << ":" << std::endl;
             system(("./a.out < " + std::to_string(i) + ".in").c_str());
             system(("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
