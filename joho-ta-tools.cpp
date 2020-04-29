@@ -40,7 +40,6 @@ void make_samples(bool use_spj)
 {
     std::cout << "compile success" << std::endl;
     int i = 1;
-    std::cin.ignore();
     for(;;i++)
     {
         std::cout << "Input" << i << ":" << std::endl;
@@ -71,7 +70,82 @@ void make_samples(bool use_spj)
     system("rm a.out");
 }
 
-void process(std::string fname)
+void make_spj(std::string fname)
+{
+    std::ifstream ifs(fname.c_str());
+    std::vector<std::string> lines;
+    while(!ifs.eof())
+    {
+        std::string s;
+        std::getline(ifs, s);
+        lines.push_back(s);
+    }
+
+    system("cp $HOME/.joho-ta-tools/template-spj.cpp spj.cpp");
+    std::ofstream ofs("spj.cpp", std::ios::app);
+    int num = 1;
+    for(auto &s : lines)
+    {
+        if(s.find("#include") != std::string::npos) continue;
+        else if(s.find("int main") != std::string::npos)
+        {
+            ofs << "int spj(FILE *input, FILE *user_output)" << std::endl;
+        }
+        else if(s.find("//") == std::string::npos && s.find("scanf") != std::string::npos)
+        {
+            s.insert(s.find("scanf"), "f");
+            s.insert(s.find("(")+1, "input, ");
+            ofs << s << std::endl;
+        }
+        else if(s.find("//") == std::string::npos && s.find("printf") != std::string::npos)
+        {
+            int st = s.find("\"");
+            int gl = s.find("\"", st+1);
+            int space = s.find_first_not_of(" ");
+            std::string str_space(space, ' ');
+            std::string subs = s.substr(st, gl-st);
+            // if(st < s.find("lf") && s.find("lf") < gl)
+            if(subs.find("lf") != std::string::npos)
+            {
+                ofs << str_space << "double user_val" << std::to_string(num) << ";" << std::endl;
+                ofs << str_space << "fscanf(user_output, \"%lf\", &user_val" << std::to_string(num) << ");" << std::endl;
+            }
+            // else if(st < s.find("f") && s.find("f") < gl)
+            else if(subs.find("f") != std::string::npos)
+            {
+                ofs << str_space << "float user_val" << std::to_string(num) << ";" << std::endl;
+                ofs << str_space << "fscanf(user_output, \"%f\", &user_val" << std::to_string(num) << ");" << std::endl;
+            }
+            // else if(st < s.find("c") && s.find("c") < gl)
+            else if(subs.find("c") != std::string::npos)
+            {
+                ofs << str_space << "char user_val" << std::to_string(num) << ";" << std::endl;
+                ofs << str_space << "fscanf(user_output, \"%c\", &user_val" << std::to_string(num) << ");" << std::endl;
+            }
+            // else if(st < s.find("s") && s.find("s") < gl)
+            else if(subs.find("s") != std::string::npos)
+            {
+                ofs << str_space << "char *user_val" << std::to_string(num) << "[2048]" << ";" << std::endl;
+                ofs << str_space << "fscanf(user_output, \"%s\", user_val" << std::to_string(num) << ");" << std::endl;
+            }
+            else
+            {
+                ofs << str_space << "int user_val" << std::to_string(num) << ";" << std::endl;
+                ofs << str_space << "fscanf(user_output, \"%d\", &user_val" << std::to_string(num) << ");" << std::endl;
+            }
+            std::string val(s, gl+2, s.size()-gl-4);
+            ofs << str_space << "if(!equiv(" << val << ", user_val" << std::to_string(num) << ")) return WA;" << std::endl;
+            num++;
+        }
+        else if(s.find("//") == std::string::npos && s.find("return 0") != std::string::npos)
+        {
+            ofs << "    return AC;" << std::endl;
+        }
+        else ofs << s << std::endl;
+    }
+}
+
+void process(std::string fname, bool use_spj=false)
 {
     if(!is_file_exist(fname))
     {
@@ -81,21 +155,23 @@ void process(std::string fname)
 
     if(compile_file(fname))
     {
-        std::cout << "Do you use spj? y/n" << std::endl;
-        char ans;
-        std::cin >> ans;
-        bool use_spj = (ans == 'y') ? true : false;
         make_samples(use_spj);
+        if(use_spj) make_spj(fname);
     }
 }
 
 int main(int argc, char* argv[])
 {
     if(argc == 1) process("main.cpp");
+    else if(argc == 2 && std::strcmp(argv[1], "spj") == 0) process("main.cpp", true);
     else if(argc == 2) process(argv[1]);
+    else if(argc == 3 && std::strcmp(argv[1], "spj") == 0) process(argv[1], true);
     else
     {
-        std::string help = "Usage:\njoho-ta-tools <file name> -- to make sample";
+        std::string help = "Usage"
+                           "joho-ta-tools  -- to make samples"
+                           "joho-ta-tools spj -- to make samples and spj-code";
         std::cout << help << std::endl;
     }
+    return 0;
 }
