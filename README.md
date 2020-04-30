@@ -5,7 +5,7 @@ testcase作成用のツール
 ```bash
 cd $HOME
 git clone https://github.com/RenFukatsu/.joho-ta-tools.git
-cd joho-ta-tools
+cd .joho-ta-tools
 g++ joho-ta-tools.cpp -o joho-ta-tools
 echo "PATH=PATH:path_to_joho-ta-tools-dir" >> ~/.profile
 source ~/.profile
