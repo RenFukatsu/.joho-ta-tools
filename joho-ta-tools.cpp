@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <cstring>
 #include <chrono>
 
 bool is_file_exist(std::string fname)
