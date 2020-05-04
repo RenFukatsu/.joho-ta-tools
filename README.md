@@ -1,6 +1,10 @@
 # .joho-ta-tools
 testcase作成用のツール
 
+## Environment
+- Ubuntu 18.04
+- c++11以上
+
 ## Install
 ```bash
 cd $HOME
