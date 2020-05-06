@@ -7,11 +7,11 @@ testcase作成用のツール
 
 ## Install
 ```bash
-cd $HOME
+cd ~
 git clone https://github.com/RenFukatsu/.joho-ta-tools.git
 cd .joho-ta-tools
 g++ joho-ta-tools.cpp -o joho-ta-tools
-echo "PATH=PATH:path_to_joho-ta-tools-dir" >> ~/.profile
+echo "PATH=PATH:~/.joho-ta-tools" >> ~/.profile
 source ~/.profile
 ```
 
