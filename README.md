@@ -54,11 +54,10 @@ source ~/.profile
    ```
    s A z 1 100
    ```
-   注意). 文字範囲の入力はASCIIコード表に準ずるため、`A z`の時、`[, \, ], etc`などの記号も含まれる。
 3. inputとoutputが出力され、`*.in`, `*.out`, `testcase.zip`などが生成される。
 
 
 
 ## 注意
-- spj採用の場合は`Create Problem`の画面で、spjのコンパイルをc++に指定する。
+- random modeで、文字範囲の入力はASCIIコード表に準ずるため、A~zを指定した時、`[, \, ]`などの記号も含まれる。
 - 色々バグがあると思うんで、バグの再現例とissueかpull reqお願いします。
