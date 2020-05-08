@@ -2,7 +2,11 @@
 #include <vector>
 #include <fstream>
 #include <cstring>
+#include <sstream>
+#include <random>
 #include <chrono>
+
+#include "argparse/argparse.hpp"
 
 bool is_file_exist(std::string fname)
 {
@@ -39,25 +43,28 @@ void make_zip(int sample_num, bool use_spj)
     system(fzip.c_str());
 }
 
+void input_texts(std::vector<std::string> &output)
+{
+    output.clear();
+    while(true)
+    {
+        char buf[256];
+        fgets(buf, sizeof(buf), stdin);
+        std::string s = buf;
+        if(s == "\n") break;
+        s.pop_back();
+        output.push_back(s);
+    }
+}
+
 void make_samples(bool use_spj)
 {
-    std::cout << "compile success" << std::endl;
     int i = 1;
     for(;;i++)
     {
         std::cout << "Input" << i << ":" << std::endl;
         std::vector<std::string> vs;
-        while(true)
-        {
-            // std::string s;
-            // std::getline(std::cin, s);
-            char buf[256];
-            fgets(buf, sizeof(buf), stdin);
-            std::string s = buf;
-            if(s == "\n") break;
-            s.pop_back();
-            vs.push_back(s);
-        }
+        input_texts(vs);
         if(vs.empty()) break;
         std::ofstream ofs((std::to_string(i) + ".in").c_str());
         for(std::string s : vs)
@@ -68,6 +75,129 @@ void make_samples(bool use_spj)
         system(("./a.out < " + std::to_string(i) + ".in").c_str());
         std::cout << std::endl;
         if(!use_spj) system(("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
+    }
+    make_zip(i, use_spj);
+    system("rm a.out");
+}
+
+void convert(const std::vector<std::string> &format, std::vector<std::string> &output)
+{
+    output.clear();
+    for(auto &line : format)
+    {
+        std::string s = "";
+        std::istringstream iss(line);
+        std::string type;
+        while(iss >> type)
+        {
+            std::mt19937 mt{ std::random_device{}() };
+            std::string smin;
+            iss >> smin;
+            std::string smax;
+            iss >> smax;
+            if(type == "i")
+            {
+                int min = std::stoi(smin);
+                int max = std::stoi(smax);
+                std::uniform_int_distribution<int> dist(min, max);
+                s += std::to_string(dist(mt));
+            }
+            else if(type == "ll")
+            {
+                long long min = std::stoll(smin);
+                long long max = std::stoll(smax);
+                std::uniform_int_distribution<long long> dist(min, max);
+                s += std::to_string(dist(mt));
+            }
+            else if(type == "f")
+            {
+                float min = std::stof(smin);
+                float max = std::stof(smax);
+                std::uniform_real_distribution<float> dist(min, max);
+                s += std::to_string(dist(mt));
+            }
+            else if(type == "d")
+            {
+                double min = std::stod(smin);
+                double max = std::stod(smax);
+                std::uniform_real_distribution<double> dist(min, max);
+                s += std::to_string(dist(mt));
+            }
+            else if(type == "c")
+            {
+                char min, max;
+                if(smin.length() == 1 && smax.length() == 1)
+                {
+                    min = smin.at(0);
+                    max = smax.at(0);
+                }
+                else
+                {
+                    std::cout << "\033[m031Even though char was asked for, the number of characters is not one.\033[m" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                std::uniform_int_distribution<int> dist(min, max);
+                s.push_back(static_cast<char>(dist(mt)));
+            }
+            else if(type == "s")
+            {
+                char min, max;
+                if(smin.length() == 1 && smax.length() == 1)
+                {
+                    min = smin.at(0);
+                    max = smax.at(0);
+                }
+                else
+                {
+                    std::cout << "\033[m031Even though char was asked for, the number of characters is not one.\033[m" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                std::string ssmin, ssmax;
+                iss >> ssmin;
+                iss >> ssmax;
+                long long lmin = std::stoll(ssmin);
+                long long lmax = std::stoll(ssmax);
+                std::uniform_int_distribution<int> dist(min, max);
+                std::uniform_int_distribution<long long> ldist(lmin, lmax);
+                long long cnt = ldist(mt);
+                for(long long i=0; i<cnt; i++)
+                {
+                    s.push_back(static_cast<char>(dist(mt)));
+                }
+            }
+            s.push_back(' ');
+        }
+        output.push_back(s);
+    }
+}
+
+void make_random_samples(int sample_num, bool use_spj)
+{
+    std::cout << "Input format:" << std::endl;
+    std::vector<std::string> format;
+    input_texts(format);
+    if(format.empty())
+    {
+        std::cout << "\033[31mThe format was not entered.\033[m" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    int i = 1;
+    for(;;i++)
+    {
+        std::cout << "Input" << i << ":" << std::endl;
+        std::vector<std::string> vs;
+        convert(format, vs);
+        for(auto &s : vs) std::cout << s << std::endl;
+        std::ofstream ofs((std::to_string(i) + ".in").c_str());
+        for(std::string s : vs)
+        {
+            ofs << s << std::endl;
+        }
+        std::cout << "Output" << i << ":" << std::endl;
+        system(("./a.out < " + std::to_string(i) + ".in").c_str());
+        std::cout << std::endl;
+        if(!use_spj) system(("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
+        if(i == sample_num) break;
     }
     make_zip(i, use_spj);
     system("rm a.out");
@@ -148,7 +278,7 @@ void make_spj(std::string fname)
     }
 }
 
-void process(std::string fname, bool use_spj=false)
+void process(std::string fname, bool use_spj, int random_sample_num)
 {
     if(!is_file_exist(fname))
     {
@@ -158,23 +288,28 @@ void process(std::string fname, bool use_spj=false)
 
     if(compile_file(fname))
     {
-        make_samples(use_spj);
+        std::cout << "compile success" << std::endl;
+        if(random_sample_num == -1) make_samples(use_spj);
+        else make_random_samples(random_sample_num, use_spj);
         if(use_spj) make_spj(fname);
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-    if(argc == 1) process("main.cpp");
-    else if(argc == 2 && std::strcmp(argv[1], "spj") == 0) process("main.cpp", true);
-    else if(argc == 2) process(argv[1]);
-    else if(argc == 3 && std::strcmp(argv[1], "spj") == 0) process(argv[1], true);
-    else
-    {
-        std::string help = "Usage"
-                           "joho-ta-tools  -- to make samples"
-                           "joho-ta-tools spj -- to make samples and spj-code";
-        std::cout << help << std::endl;
-    }
+    argparse::ArgumentParser parser(".joho-ta-tools", "Online Judgeのtestcase作成のための補助ツール");
+
+    parser.addArgument({"--file_path", "-f"}, "path to file");
+    parser.addArgument({"--spj", "-s"}, "use spj", argparse::ArgumentType::StoreTrue);
+    parser.addArgument({"--random", "-r"}, "random sample num");
+
+    auto args = parser.parseArgs(argc, argv);
+
+    std::string fname = args.safeGet<std::string>("file_path", "main.cpp");
+    bool use_spj = args.has("spj");
+    int random_sample_num = args.safeGet<int>("random", -1);
+
+    process(fname, use_spj, random_sample_num);
+
     return 0;
 }
