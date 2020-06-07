@@ -1,5 +1,6 @@
 # .joho-ta-tools
-Online JudgeにおけるTAの仕事の効率化を目指します。 
+Online JudgeにおけるTAの仕事の効率化を目指します。
+testcase作成の自動化ツールの`gen`コマンドとOJの結果を統合するための`merge`コマンドを用意しています。
 
 ## Environment
 - Ubuntu 18.04
@@ -18,6 +19,7 @@ source ~/.profile
 
 ## generate testcase
 testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあること前提でそこからテストケースを半自動作成します。randomモードが一番使い勝手がいいと思います。
+
 ### How to use
 1. テストケースの模範解答(`main.cpp`)があるディレクトリに移動
 2. `joho-ta-tools gen`でディレクトリ内の`main.cpp`がコンパイルされ、入力待ちの状態になる。
@@ -57,6 +59,39 @@ testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあるこ
    s A z 1 100
    ```
 3. inputとoutputが出力され、`*.in`, `*.out`, `testcase.zip`などが生成される。
+
+## merge csv file
+csvファイルは2種類必要となります。
+1. ポートフォリオから抽出したファイル。以下のようなフォーマットに従っていることを確認してください。
+
+   理工 | 1 | 5 | 1 | 安藤 | アンドウ | 153R200000
+   --- | --- | --- | --- | --- | --- | ---
+   理工 | 1 | 5 | 2 | 伊藤 | イトウ | 153R200001
+   以下続く | | | | | |
+
+2. online judgeから得られたコンテスト結果。.xlsxを.csvに変換してください。またディレクトリ内に全てのコンテスト結果のcsvファイルをまとめてください。1行目を削除する必要は特にありません。以下のようなフォーマットに従っていることを確認してください。
+
+   User ID | Username | Real Name | Total Score | Q1 | Q2 | etc
+   --- | --- | --- | --- | --- | --- | ---
+   123 | 153R200000 | ando | 200 | 100 | 100 | etc
+   以下続く | | | | | |
+
+### ファイル構成
+1のcsvファイルをone.csv、2のcsvファイルをtwo1.csv, two2.csv...、2のcsvファイルをまとめて入れるディレクトリをcontest_resultsとすると、
+
+```
+one.csv
+contest_results--two1.csv
+               |-two2.csv
+               |-etc
+```
+
+という構成にしてください。
+
+### How to use
+上のようなファイル構成を用意できればone.csvのあるディレクトリ上で以下のコマンドを実行してください。
+
+`joho-ta-tools merge -d one.csv -c contest_results -o output.csv`
 
 
 
