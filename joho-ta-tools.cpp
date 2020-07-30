@@ -8,7 +8,8 @@
 int main(int argc, char** argv)
 {
     const std::string help = "Usage:\n"
-                             "joho-ta-tools gen -- to generate testcase.";
+                             "joho-ta-tools gen -- to generate testcase.\n"
+                             "joho-ta-tools merge -- to merge result.";
     if(argc < 2)
     {
         puts(help.c_str());
