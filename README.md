@@ -21,6 +21,7 @@ source ~/.bashrc
 testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあること前提でそこからテストケースを半自動作成します。randomモードが一番使い勝手がいいと思います。
 
 ### Folder Structure
+基本のフォルダ構成は以下のように行う。
 ![Screenshot from 2021-04-08 19-10-12](https://user-images.githubusercontent.com/47164533/114009434-19339e00-989e-11eb-8fa6-900e4ce0ea4f.png)
 
 
@@ -49,7 +50,7 @@ testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあるこ
    s A z 1 100
    ```
 
-最終的なフォルダ構成は以下のようになる。`hoge.zip`をojの`Testcase choose file`というところに入れる。
+最終的なフォルダ構成は以下のようになる。`zips/hoge.zip`をojの`Testcase choose file`というところに入れる。
 ![Screenshot from 2021-04-08 19-15-49](https://user-images.githubusercontent.com/47164533/114010236-dcb47200-989e-11eb-80f1-5d293eef9a76.png)
 
 
