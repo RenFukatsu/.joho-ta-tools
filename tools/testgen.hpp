@@ -24,19 +24,23 @@ namespace testgen
         bool is_success = false;
         size_t idx_ext = fname.find_last_of('.');
         std::string ext = fname.substr(idx_ext, fname.size() - idx_ext);
-        if(ext == ".c") is_success = !system(("/usr/bin/gcc -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c11 " + fname + " -lm -o a.out").c_str());
-        else if(ext == ".cpp") is_success = !system(("/usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 " + fname + " -lm -o a.out").c_str());
+        std::string name = fname.substr(0, idx_ext);
+
+        if(ext == ".c") is_success = !system(("/usr/bin/gcc -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c11 src/" + fname + " -lm -o a.out").c_str());
+        else if(ext == ".cpp") is_success = !system(("/usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 src/" + fname + " -lm -o a.out").c_str());
         else
         {
             std::cout << "\033[31mThis file does not have a .c or .cpp extension. \033[m" << std::endl;
             exit(EXIT_FAILURE);
         }
+
+        system(("mkdir -p bin && cp a.out bin/" + name + ".out").c_str());
         return is_success;
     }
 
     void make_zip(int sample_num, bool use_spj)
     {
-        std::string fzip = "zip testcase.zip";
+        std::string fzip = "zip testcases.zip";
         for(int i=1; i<=sample_num; i++)
         {
             std::string n = std::to_string(i);
@@ -80,7 +84,7 @@ namespace testgen
             if(!use_spj) system(("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
         }
         make_zip(i, use_spj);
-        system("rm a.out");
+        system("rm -f a.out");
     }
 
     void convert(const std::vector<std::string> &format, std::vector<std::string> &output)
@@ -281,19 +285,31 @@ namespace testgen
         }
     }
 
-    void process(std::string fname, bool use_spj, int random_sample_num)
+    void folderize(std::string fname) {
+        size_t idx_ext = fname.find_last_of('.');
+        std::string name = fname.substr(0, idx_ext);
+        system(("mkdir -p testcases/" + name + " && mv *.in testcases/" + name + "/ && mv *.out testcases/" + name).c_str());
+        system(("mkdir -p zips && mv testcases.zip zips/" + name + ".zip").c_str());
+    }
+
+    void process(std::string fname, bool only_compile, bool use_spj, int random_sample_num)
     {
-        if(!is_file_exist(fname))
+        if(!is_file_exist("src/" + fname))
         {
-            std::cout << "\033[31mCannot find \"" << fname << "\". \033[m" << std::endl; 
+            std::cout << "\033[31mCannot find src/\"" << fname << "\". \033[m" << std::endl;
             exit(EXIT_FAILURE);
         }
 
         if(compile_file(fname))
         {
             std::cout << "compile success" << std::endl;
-            if(random_sample_num == -1) make_samples(use_spj);
+            if (only_compile) {
+                system("rm -f a.out");
+                return;
+            }
+            if (random_sample_num == -1) make_samples(use_spj);
             else make_random_samples(random_sample_num, use_spj);
+            folderize(fname);
             if(use_spj) make_spj(fname);
         }
     }
@@ -302,17 +318,19 @@ namespace testgen
     {
         argparse::ArgumentParser parser(".joho-ta-tools gen", "generate testcase.");
 
-        parser.addArgument({"--file_path", "-f"}, "path to file");
+        parser.addArgument({"--filename", "-f"}, "hoge.cpp");
+        parser.addArgument({"--compile", "-c"}, "compile only", argparse::ArgumentType::StoreTrue);
         parser.addArgument({"--spj", "-s"}, "use spj", argparse::ArgumentType::StoreTrue);
         parser.addArgument({"--random", "-r"}, "random sample num");
 
         auto args = parser.parseArgs(argc, argv);
 
-        std::string fname = args.safeGet<std::string>("file_path", "main.cpp");
+        std::string fname = args.get<std::string>("filename");
         bool use_spj = args.has("spj");
+        bool only_compile = args.has("compile");
         int random_sample_num = args.safeGet<int>("random", -1);
 
-        process(fname, use_spj, random_sample_num);
+        process(fname, only_compile, use_spj, random_sample_num);
 
         return 0;
     }
