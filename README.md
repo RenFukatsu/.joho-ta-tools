@@ -22,12 +22,15 @@ testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあるこ
 
 ### Folder Structure
 基本のフォルダ構成は以下のように行う。
+
 ![Screenshot from 2021-04-08 19-10-12](https://user-images.githubusercontent.com/47164533/114009434-19339e00-989e-11eb-8fa6-900e4ce0ea4f.png)
 
 
 ### How to use
 ![Screenshot from 2021-04-08 19-12-53](https://user-images.githubusercontent.com/47164533/114009799-72033680-989e-11eb-9db0-66de39ebdd8e.png)
+
 `joho-ta-tools gen -r num -f hoge.cpp`で`hoge.cpp`に対するテストケースがnum個できる。
+
 `Input format:`に続いて、入力の型を決定する。入力の際のルールは以下に従う。
    ```
    int : i min max
