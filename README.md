@@ -20,24 +20,14 @@ source ~/.bashrc
 ## generate testcase
 testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあること前提でそこからテストケースを半自動作成します。randomモードが一番使い勝手がいいと思います。
 
+### Folder Structure
+![Screenshot from 2021-04-08 19-10-12](https://user-images.githubusercontent.com/47164533/114009434-19339e00-989e-11eb-8fa6-900e4ce0ea4f.png)
+
+
 ### How to use
-1. テストケースの模範解答(`main.cpp`)があるディレクトリに移動
-2. `joho-ta-tools gen`でディレクトリ内の`main.cpp`がコンパイルされ、入力待ちの状態になる。
-3. `Input?:`に続いて、テストケースの入力を行う。入力が終わったら、`Enter`を入力。
-4. `Output?:`として、計算結果が出力される。
-5. テストケースの作成を終えたいときは、`Input?:`の時に`Enter`を入力する。
-6. 生成物として、`*.in`, `*.out`, `testcase.zip`が生成される。
-
-### with special judge
-上記の1, 3, 4, 5は同じ。
-
-2'. `joho-ta-tools gen -s`でディレクトリ内の`main.cpp`がコンパイルされ、入力待ちの状態になる。
-
-6'. `*.in`, `testcase.zip`, `spj.cpp`が出力される。
-
-### with random mode
-1. `joho-ta-tools gen -r num_of_samples`を入力
-2. `Input format:`に続いて、入力の型を決定する。入力の際のルールは以下に従う。
+![Screenshot from 2021-04-08 19-12-53](https://user-images.githubusercontent.com/47164533/114009799-72033680-989e-11eb-9db0-66de39ebdd8e.png)
+`joho-ta-tools gen -r num -f hoge.cpp`で`hoge.cpp`に対するテストケースがnum個できる。
+`Input format:`に続いて、入力の型を決定する。入力の際のルールは以下に従う。
    ```
    int : i min max
    long long : ll min max
@@ -58,7 +48,13 @@ testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあるこ
    ```
    s A z 1 100
    ```
-3. inputとoutputが出力され、`*.in`, `*.out`, `testcase.zip`などが生成される。
+
+最終的なフォルダ構成は以下のようになる。`hoge.zip`をojの`Testcase choose file`というところに入れる。
+![Screenshot from 2021-04-08 19-15-49](https://user-images.githubusercontent.com/47164533/114010236-dcb47200-989e-11eb-80f1-5d293eef9a76.png)
+
+
+### with special judge
+TODO
 
 ## merge csv file
 csvファイルは2種類必要となります。
