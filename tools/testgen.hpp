@@ -64,6 +64,27 @@ namespace testgen
         }
     }
 
+    void make_samples_with_generator(std::string generator_path)
+    {
+        int i = 1;
+        if (system(("/usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 " + generator_path + " -lm -o gen.out").c_str())) {
+            std::cout << "\033[31myour generator was wrong.\033[m" << std::endl;
+            return;
+        }
+        for(;i <= 10; i++)
+        {
+            std::cout << "Input" << i << ":" << std::endl;
+            system(("./gen.out > " + std::to_string(i) + ".in").c_str());
+            system(("cat " + std::to_string(i) + ".in").c_str());
+            std::cout << "Output" << i << ":" << std::endl;
+            system(("./a.out < " + std::to_string(i) + ".in").c_str());
+            std::cout << std::endl;
+            system(("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
+        }
+        make_zip(i - 1, false);
+        system("rm -f gen.out a.out");
+    }
+
     void make_samples(bool use_spj)
     {
         int i = 1;
@@ -292,7 +313,7 @@ namespace testgen
         system(("mkdir -p zips && mv testcases.zip zips/" + name + ".zip").c_str());
     }
 
-    void process(std::string fname, bool only_compile, bool use_spj, int random_sample_num)
+    void process(std::string fname, bool only_compile, bool use_spj, int random_sample_num, std::string generator_path)
     {
         if(!is_file_exist("src/" + fname))
         {
@@ -307,7 +328,8 @@ namespace testgen
                 system("rm -f a.out");
                 return;
             }
-            if (random_sample_num == -1) make_samples(use_spj);
+            if (generator_path != "" && is_file_exist(generator_path)) make_samples_with_generator(generator_path);
+            else if (random_sample_num == -1) make_samples(use_spj);
             else make_random_samples(random_sample_num, use_spj);
             folderize(fname);
             if(use_spj) make_spj(fname);
@@ -322,6 +344,7 @@ namespace testgen
         parser.addArgument({"--compile", "-c"}, "compile only", argparse::ArgumentType::StoreTrue);
         parser.addArgument({"--spj", "-s"}, "use spj", argparse::ArgumentType::StoreTrue);
         parser.addArgument({"--random", "-r"}, "random sample num");
+        parser.addArgument({"--generator", "-g"}, "if you use your generator, input generator path with '-g'");
 
         auto args = parser.parseArgs(argc, argv);
 
@@ -329,8 +352,9 @@ namespace testgen
         bool use_spj = args.has("spj");
         bool only_compile = args.has("compile");
         int random_sample_num = args.safeGet<int>("random", -1);
+        std::string generator_path = args.safeGet<std::string>("generator", "");
 
-        process(fname, only_compile, use_spj, random_sample_num);
+        process(fname, only_compile, use_spj, random_sample_num, generator_path);
 
         return 0;
     }
