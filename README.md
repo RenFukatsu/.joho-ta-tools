@@ -19,10 +19,10 @@ source ~/.bashrc
 ```
 
 ## generate testcase
-testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあること前提でそこからテストケースを半自動作成します。randomモードが一番使い勝手がいいと思います。
+testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあること前提でそこからテストケースを半自動作成します。
 
 ### Folder Structure
-基本のフォルダ構成は以下のように行う。
+基本のフォルダ構成は以下のようにしてください。
 
 ![Screenshot from 2021-04-08 19-10-12](https://user-images.githubusercontent.com/47164533/114009434-19339e00-989e-11eb-8fa6-900e4ce0ea4f.png)
 
@@ -30,9 +30,9 @@ testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあるこ
 ### How to use
 ![Screenshot from 2021-04-08 19-12-53](https://user-images.githubusercontent.com/47164533/114009799-72033680-989e-11eb-9db0-66de39ebdd8e.png)
 
-`joho-ta-tools gen -r num -f hoge.cpp`で`hoge.cpp`に対するテストケースがnum個できる。
+`joho-ta-tools gen -r num -f model_answer.cpp`で`model_answer.cpp`に対するテストケースがnum個できます。
 
-`Input format:`に続いて、入力の型を決定する。入力の際のルールは以下に従う。
+`Input format:`に続いて、入力の型を決定します。入力の際のルールは以下に従い、入力してください。改行二回で入力を終了します。
    ```
    int : i min max
    long long : ll min max
@@ -53,16 +53,33 @@ testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあるこ
    ```
    s A z 1 100
    ```
+   例4). int型で-100~100の範囲の入力を2つ横に並べて与えたいとき、
+   ```
+   i -100 100 i -100 100
+   ```
 
-最終的なフォルダ構成は以下のようになる。`zips/hoge.zip`をojの`Testcase choose file`というところに入れる。
+最終的なフォルダ構成は以下のようになります。`zips/hoge.zip`をojの`Testcase choose file`というところに入れてください。
 ![Screenshot from 2021-04-08 19-15-49](https://user-images.githubusercontent.com/47164533/114010236-dcb47200-989e-11eb-80f1-5d293eef9a76.png)
 
+### Create all testcases manually
+```
+joho-ta-tools gen -f model_answer.cpp
+```
+
+上記のコマンドの後、入力のテストケースが聞かれるので，順次入力してください。全てのテストケースを手動で入れる必要があります。
+
+### with handmade generator
+入力ケースをアウトプットするプログラム(ex. generator.cpp)を作成し、以下のコマンドを使って、10個のテストケースを生成します。
+
+```
+joho-ta-tools gen -f model_answer.cpp -g generator.cpp
+```
 
 ### with special judge
 TODO
 
 ## merge csv file
-csvファイルは2種類必要となります。
+csvファイルは2種類必要となります。xlsxをcsvに変換する際には[dilshod/xlsx2csv](https://github.com/dilshod/xlsx2csv)のようなものが便利です。
 1. ポートフォリオから抽出したファイル。以下のようなフォーマットに従っていることを確認してください。
 
    理工 | 1 | 5 | 1 | 安藤 | アンドウ | 153R200000
@@ -70,32 +87,24 @@ csvファイルは2種類必要となります。
    理工 | 1 | 5 | 2 | 伊藤 | イトウ | 153R200001
    以下続く | | | | | |
 
-2. online judgeから得られたコンテスト結果。.xlsxを.csvに変換してください。またディレクトリ内に全てのコンテスト結果のcsvファイルをまとめてください。1行目を削除する必要は特にありません。以下のようなフォーマットに従っていることを確認してください。
+2. online judgeから得られたコンテスト結果。またディレクトリ内に全てのコンテスト結果のcsvファイルをまとめてください。1行目を削除する必要は特にありません。以下のようなフォーマットに従っていることを確認してください。
 
    User ID | Username | Real Name | Total Score | Q1 | Q2 | etc
    --- | --- | --- | --- | --- | --- | ---
    123 | 153R200000 | ando | 200 | 100 | 100 | etc
    以下続く | | | | | |
 
-### ファイル構成
-1のcsvファイルをone.csv、2のcsvファイルをtwo1.csv, two2.csv...、2のcsvファイルをまとめて入れるディレクトリをcontest_resultsとすると、
+### Folder Structure
+2のcsvファイルは全て、同一のディレクトリに入れてください。
 
-```
-one.csv
-contest_results--two1.csv
-               |-two2.csv
-               |-etc
-```
-
-という構成にしてください。
+### arguments
+- --default-csv VALUE, -d VALUE  : Value is required. 上記の1に当たるcsvファイルのパスを入力してください
+- --contests-dir VALUE, -c VALUE : Value is required. 上記の2に当たるcsvファイルをまとめたディレクトリのパスを入力してください
+- --output-file VALUE, -o VALUE  : output file name. default name is 'merge.csv'.
 
 ### How to use
-上のようなファイル構成を用意できればone.csvのあるディレクトリ上で以下のコマンドを実行してください。
+画像のような構成の場合、以下のコマンドで結果が生成されます。
 
-`joho-ta-tools merge -d one.csv -c contest_results -o output.csv`
+`joho-ta-tools merge -d student_list/2020_全学生リスト.csv -c contest_results -o result.csv`
 
-
-
-## 注意
-- random modeで、文字範囲の入力はASCIIコード表に準ずるため、A~zを指定した時、`[, \, ]`などの記号も含まれる。小文字のみか大文字のみを指定することを推奨。
-- 色々バグがあると思うんで、バグの再現例とissueかpull reqお願いします。
+![image](https://user-images.githubusercontent.com/47164533/119483430-ec751080-bd8f-11eb-9243-01cae11e0edd.png)
