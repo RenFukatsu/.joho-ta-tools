@@ -23,30 +23,27 @@ bool compile_file(std::string fname) {
     std::string ext = fname.substr(idx_ext, fname.size() - idx_ext);
     std::string name = fname.substr(0, idx_ext);
 
+    system("mkdir -p bin");
     if (ext == ".c") {
         is_success = !system(("/usr/bin/gcc -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c11 src/" +
-                              fname + " -lm -o a.out")
+                              fname + " -lm -o bin/a.out")
                                  .c_str());
     } else if (ext == ".cpp") {
         is_success = !system(("/usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 src/" +
-                              fname + " -lm -o a.out")
+                              fname + " -lm -o bin/a.out")
                                  .c_str());
     } else {
         std::cout << "\033[31mThis file does not have a .c or .cpp extension. \033[m" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    system(("mkdir -p bin && cp a.out bin/" + name + ".out").c_str());
+    system(("cp bin/a.out bin/" + name + ".out").c_str());
     return is_success;
 }
 
-void make_zip(int sample_num, bool use_spj) {
-    std::string fzip = "zip testcases.zip";
-    for (int i = 1; i <= sample_num; i++) {
-        std::string n = std::to_string(i);
-        fzip += " " + n + ".in";
-        if (!use_spj) fzip += " " + n + ".out";
-    }
+void make_zip(bool use_spj) {
+    std::string fzip = "zip testcases.zip *.in";
+    if (!use_spj) fzip += " *.out";
     system(fzip.c_str());
 }
 
@@ -62,47 +59,63 @@ void input_texts(std::vector<std::string> &output) {
     }
 }
 
-void make_samples_with_generator(std::string generator_path) {
+void make_samples_with_generator(std::string generator_path, int sample_num) {
     int i = 1;
+    while (is_file_exist(std::to_string(i) + ".in")) {
+        i++;
+        if (sample_num != -1) sample_num++;
+    }
     if (system(("/usr/bin/g++ -DONLINE_JUDGE -O2 -w -fmax-errors=3 -std=c++14 " + generator_path +
-                " -lm -o gen.out")
+                " -lm -o bin/gen.out")
                    .c_str())) {
         std::cout << "\033[31myour generator was wrong.\033[m" << std::endl;
         return;
     }
-    for (; i <= 10; i++) {
+    if (sample_num == -1) sample_num = 10;
+    for (; i <= sample_num; i++) {
         std::cout << "Input" << i << ":" << std::endl;
-        system(("./gen.out > " + std::to_string(i) + ".in").c_str());
+        system(("./bin/gen.out > " + std::to_string(i) + ".in").c_str());
         system(("cat " + std::to_string(i) + ".in").c_str());
         std::cout << "Output" << i << ":" << std::endl;
-        system(("./a.out < " + std::to_string(i) + ".in").c_str());
+        system(("./bin/a.out < " + std::to_string(i) + ".in").c_str());
         std::cout << std::endl;
-        system(("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
+        system(
+            ("./bin/a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
     }
-    make_zip(i - 1, false);
-    system("rm -f gen.out a.out");
+    make_zip(false);
+    system("rm -f bin/gen.out bin/a.out");
 }
 
-void make_samples(bool use_spj) {
+void make_samples(bool use_spj, int &random_sample_num, std::string &generator_path) {
     int i = 1;
     for (;; i++) {
         std::cout << "Input" << i << ":" << std::endl;
         std::vector<std::string> vs;
         input_texts(vs);
+        if (vs.size() == 1 && vs[0].find("-r") != std::string::npos) {
+            vs[0].erase(0, 3);
+            random_sample_num = std::stoi(vs[0]);
+            return;
+        }
+        if (vs.size() == 1 && vs[0].find("-g") != std::string::npos) {
+            vs[0].erase(0, 3);
+            generator_path = vs[0];
+            return;
+        }
         if (vs.empty()) break;
         std::ofstream ofs((std::to_string(i) + ".in").c_str());
         for (std::string s : vs) {
             ofs << s << std::endl;
         }
         std::cout << "Output" << i << ":" << std::endl;
-        system(("./a.out < " + std::to_string(i) + ".in").c_str());
+        system(("./bin/a.out < " + std::to_string(i) + ".in").c_str());
         std::cout << std::endl;
         if (!use_spj)
-            system(
-                ("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
+            system(("./bin/a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out")
+                       .c_str());
     }
-    make_zip(i, use_spj);
-    system("rm -f a.out");
+    make_zip(use_spj);
+    system("rm -f bin/a.out");
 }
 
 void convert(const std::vector<std::string> &format, std::vector<std::string> &output) {
@@ -188,6 +201,10 @@ void make_random_samples(int sample_num, bool use_spj) {
         exit(EXIT_FAILURE);
     }
     int i = 1;
+    while (is_file_exist(std::to_string(i) + ".in")) {
+        i++;
+        sample_num++;
+    }
     for (;; i++) {
         std::cout << "Input" << i << ":" << std::endl;
         std::vector<std::string> vs;
@@ -198,15 +215,15 @@ void make_random_samples(int sample_num, bool use_spj) {
             ofs << s << std::endl;
         }
         std::cout << "Output" << i << ":" << std::endl;
-        system(("./a.out < " + std::to_string(i) + ".in").c_str());
+        system(("./bin/a.out < " + std::to_string(i) + ".in").c_str());
         std::cout << std::endl;
         if (!use_spj)
-            system(
-                ("./a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out").c_str());
+            system(("./bin/a.out < " + std::to_string(i) + ".in > " + std::to_string(i) + ".out")
+                       .c_str());
         if (i == sample_num) break;
     }
-    make_zip(i, use_spj);
-    system("rm a.out");
+    make_zip(use_spj);
+    system("rm ./bin/a.out");
 }
 
 void make_spj(std::string fname) {
@@ -293,15 +310,22 @@ void process(std::string fname, bool only_compile, bool use_spj, int random_samp
     if (compile_file(fname)) {
         std::cout << "compile success" << std::endl;
         if (only_compile) {
-            system("rm -f a.out");
+            system("rm -f ./bin/a.out");
             return;
         }
-        if (generator_path != "" && is_file_exist(generator_path))
-            make_samples_with_generator(generator_path);
-        else if (random_sample_num == -1)
-            make_samples(use_spj);
-        else
-            make_random_samples(random_sample_num, use_spj);
+        int tmp_rand = random_sample_num;
+        std::string tmp_gen = generator_path;
+        for (bool first = true; first || tmp_rand != random_sample_num || tmp_gen != generator_path;
+             first = false) {
+            tmp_rand = random_sample_num;
+            tmp_gen = generator_path;
+            if (generator_path != "" && is_file_exist(generator_path))
+                make_samples_with_generator(generator_path, random_sample_num);
+            else if (random_sample_num < 0)
+                make_samples(use_spj, random_sample_num, generator_path);
+            else
+                make_random_samples(random_sample_num, use_spj);
+        }
         folderize(fname);
         if (use_spj) make_spj(fname);
     }
@@ -314,8 +338,7 @@ int generate(int argc, char **argv) {
     parser.addArgument({"--compile", "-c"}, "Compile only", argparse::ArgumentType::StoreTrue);
     parser.addArgument({"--spj", "-s"}, "use spj", argparse::ArgumentType::StoreTrue);
     parser.addArgument({"--random", "-r"}, "random sample num");
-    parser.addArgument({"--generator", "-g"},
-                       "if you use your generator, input generator path.");
+    parser.addArgument({"--generator", "-g"}, "if you use your generator, input generator path.");
 
     auto args = parser.parseArgs(argc, argv);
 
