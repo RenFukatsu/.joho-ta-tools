@@ -36,6 +36,7 @@ class Student {
         name = vstr.at(4);
         yomi = vstr.at(5);
         student_num = vstr.at(6);
+        if (student_num[3] == 'R') student_num[3] = 'r';
     }
 };
 
@@ -71,6 +72,7 @@ std::vector<Student> read_default_csv(std::string fname) {
     std::vector<std::vector<std::string>> lines = read_csv(fname);
     std::vector<Student> student_infos;
     for (auto &line : lines) {
+        if (!std::any_of(line.at(1).cbegin(), line.at(1).cend(), isdigit)) continue;
         student_infos.push_back(Student(line));
     }
     // for(auto &st : student_infos)
@@ -105,11 +107,20 @@ bool is_csv(std::string fname) {
     return extname == ".csv";
 }
 
+std::string extract_filename(std::string path) {
+    auto ext_idx = path.find_last_of('.');
+    auto slash_idx = path.find_last_of('/');
+    int adj = (slash_idx == std::string::npos ? 0 : 1);
+    std::string filename = path.substr(slash_idx + adj, ext_idx - slash_idx - adj);
+    return filename;
+}
+
 void append_info(std::string fname, std::vector<Student> &student_infos) {
     static int num_contest = 0;
     std::vector<std::vector<std::string>> lines = read_csv(fname);
     for (auto &line : lines) {
         if (!std::any_of(line.at(1).cbegin(), line.at(1).cend(), isdigit)) continue;
+        if (line.at(1)[3] == 'R') line.at(1)[3] = 'r';
         for (auto &st : student_infos) {
             if (st.student_num == line.at(1)) {
                 st.scores.push_back(std::stoi(line.at(3)));
@@ -123,8 +134,10 @@ void append_info(std::string fname, std::vector<Student> &student_infos) {
     }
 }
 
-void write_csv(std::string fname, std::vector<Student> &student_infos) {
+void write_csv(std::string fname, std::vector<std::string> header, std::vector<Student> &student_infos) {
     std::ofstream ofs(fname);
+    for (auto str : header) ofs << str << ',';
+    ofs << '\n';
     for (auto &st : student_infos) {
         ofs << st.faculty << ',' << st.year << ',' << st.clas << ',' << st.number << ',' << st.name << ',' << st.yomi
             << ',' << st.student_num << ',' << std::accumulate(st.scores.begin(), st.scores.end(), 0);
@@ -138,11 +151,13 @@ void write_csv(std::string fname, std::vector<Student> &student_infos) {
 void process(std::string fname, std::string dirname, std::string oname) {
     std::vector<Student> student_infos = read_default_csv(fname);
     std::vector<std::string> files = get_files_in_dir(dirname);
+    std::vector<std::string> header = {"学部", "学年", "組", "番", "氏名", "読み", "学籍番号", "合計得点"};
     for (auto &file : files) {
         if (!is_csv(file)) continue;
+        header.push_back(extract_filename(file));
         append_info(file, student_infos);
     }
-    write_csv(oname, student_infos);
+    write_csv(oname, header, student_infos);
 }
 
 int merge(int argc, char **argv) {
