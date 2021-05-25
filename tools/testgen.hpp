@@ -310,12 +310,12 @@ void process(std::string fname, bool only_compile, bool use_spj, int random_samp
 int generate(int argc, char **argv) {
     argparse::ArgumentParser parser(".joho-ta-tools gen", "generate testcase.");
 
-    parser.addArgument({"--filename", "-f"}, "hoge.cpp");
-    parser.addArgument({"--compile", "-c"}, "compile only", argparse::ArgumentType::StoreTrue);
+    parser.addArgument({"--filename", "-f"}, "VALUE is required. input your model_answer.cpp");
+    parser.addArgument({"--compile", "-c"}, "Compile only", argparse::ArgumentType::StoreTrue);
     parser.addArgument({"--spj", "-s"}, "use spj", argparse::ArgumentType::StoreTrue);
     parser.addArgument({"--random", "-r"}, "random sample num");
     parser.addArgument({"--generator", "-g"},
-                       "if you use your generator, input generator path with '-g'");
+                       "if you use your generator, input generator path.");
 
     auto args = parser.parseArgs(argc, argv);
 
