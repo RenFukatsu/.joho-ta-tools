@@ -59,6 +59,7 @@ testcase作成の自動化ツール。模範解答(.c/.cpp)は手元にあるこ
    ```
 
 最終的なフォルダ構成は以下のようになります。`zips/hoge.zip`をojの`Testcase choose file`というところに入れてください。
+
 ![Screenshot from 2021-04-08 19-15-49](https://user-images.githubusercontent.com/47164533/114010236-dcb47200-989e-11eb-80f1-5d293eef9a76.png)
 
 ### Create all testcases manually
@@ -69,7 +70,7 @@ joho-ta-tools gen -f model_answer.cpp
 上記のコマンドの後、入力のテストケースが聞かれるので，順次入力してください。全てのテストケースを手動で入れる必要があります。
 
 ### with handmade generator
-入力ケースをアウトプットするプログラム(ex. generator.cpp)を作成し、以下のコマンドを使って、10個のテストケースを生成します。
+入力ケースをアウトプットするプログラム(ex. generator.cpp)を作成し、以下のコマンドを実行すると、10個のテストケースを生成します。
 
 ```
 joho-ta-tools gen -f model_answer.cpp -g generator.cpp
@@ -79,7 +80,7 @@ joho-ta-tools gen -f model_answer.cpp -g generator.cpp
 TODO
 
 ## merge csv file
-csvファイルは2種類必要となります。xlsxをcsvに変換する際には[dilshod/xlsx2csv](https://github.com/dilshod/xlsx2csv)のようなものが便利です。
+csvファイルが2種類必要となります。xlsxをcsvに変換する際には[dilshod/xlsx2csv](https://github.com/dilshod/xlsx2csv)のようなものが便利です。
 1. ポートフォリオから抽出したファイル。以下のようなフォーマットに従っていることを確認してください。
 
    理工 | 1 | 5 | 1 | 安藤 | アンドウ | 153R200000
@@ -87,15 +88,13 @@ csvファイルは2種類必要となります。xlsxをcsvに変換する際に
    理工 | 1 | 5 | 2 | 伊藤 | イトウ | 153R200001
    以下続く | | | | | |
 
-2. online judgeから得られたコンテスト結果。またディレクトリ内に全てのコンテスト結果のcsvファイルをまとめてください。1行目を削除する必要は特にありません。以下のようなフォーマットに従っていることを確認してください。
+2. online judgeから得られたコンテスト結果。全てのコンテスト結果のcsvファイルは、1つのディレクトリの中にまとめてください。1行目を削除する必要は特にありません。以下のようなフォーマットに従っていることを確認してください。
 
    User ID | Username | Real Name | Total Score | Q1 | Q2 | etc
    --- | --- | --- | --- | --- | --- | ---
    123 | 153R200000 | ando | 200 | 100 | 100 | etc
    以下続く | | | | | |
 
-### Folder Structure
-2のcsvファイルは全て、同一のディレクトリに入れてください。
 
 ### arguments
 - --default-csv VALUE, -d VALUE  : Value is required. 上記の1に当たるcsvファイルのパスを入力してください
