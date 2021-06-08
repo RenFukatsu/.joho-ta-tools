@@ -14,7 +14,7 @@ cd .joho-ta-tools
 git clone https://github.com/SiLeader/argparse.git
 mkdir bin
 g++ joho-ta-tools.cpp -o bin/joho-ta-tools
-echo "export PATH=\"\$PATH:\$HOME/.joho-ta-tools\"" >> ~/.bashrc
+echo "export PATH=\"\$PATH:\$HOME/.joho-ta-tools/bin\"" >> ~/.bashrc
 source ~/.bashrc
 ```
 
