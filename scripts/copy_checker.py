@@ -1,5 +1,8 @@
 import argparse
 import os
+import tqdm
+import sys
+
 
 class Submit:
     def __init__(self, file_path: str) -> None:
@@ -14,10 +17,16 @@ class UnionFind:
         self.d = [-1] * n
     
     def find(self, x):
-        if self.d[x] < 0:
-            return x
-        self.d[x] = self.find(x)
-        return self.d[x]
+        parent = self.d[x]
+        while parent >= 0:
+            if self.d[parent] < 0:
+                return parent
+            self.d[x], x, parent = (
+                self.d[parent],
+                self.d[parent],
+                self.d[self.d[parent]]
+            )
+        return x
     
     def unite(self, x, y):
         x = self.find(x)
@@ -51,6 +60,7 @@ def main():
     parser = argparse.ArgumentParser(description='edit distance')
     parser.add_argument('ac_dir', help='required ac dir')
     parser.add_argument('-t', '--tolerance', type=int, default=10)
+    parser.add_argument('-o', '--output', default='output.csv')
     args = parser.parse_args()
 
     submissions = parse_submission(args.ac_dir)
@@ -59,14 +69,18 @@ def main():
         problems.setdefault(sub.problem_no, []).append(sub)
     ans = []
     for no in problems:
+        print("Problem" + str(no))
         groups = clustering(problems[no], args.tolerance)
+        ans.append(groups)
     
-    with open('output.csv', 'w') as f:
-        f.write("Problem" + no + '\n')
-        for g in groups:
-            for st in g:
-                f.write(st.student + ',')
-        f.write('\n')
+    with open(args.output, 'w') as f:
+        for i in range(len(ans)):
+            f.write("Problem" + str(ans[i][0][0].problem_no) + '\n')
+            for g in ans[i]:
+                for st in g:
+                    f.write(st.student + ',')
+                f.write('\n')
+            f.write('\n')
 
 def parse_submission(ac_dir):
     res = list()
@@ -78,9 +92,9 @@ def parse_submission(ac_dir):
 def clustering(submissions, tolerance):
     uf = UnionFind(len(submissions))
     sz = len(submissions)
-    for i in range(sz):
+    for i in tqdm.tqdm(range(sz)):
         for j in range(i + 1, sz):
-            edit_distance = calc_edit_distance(submissions[i].text, submissions[j].text)
+            edit_distance = calc_edit_distance(submissions[i].text, submissions[j].text, tolerance)
             if edit_distance < tolerance:
                 uf.unite(i, j)
     grs = uf.groups()
@@ -94,7 +108,7 @@ def clustering(submissions, tolerance):
         res.append(l)
     return res
 
-def calc_edit_distance(str1: str, str2: str):
+def calc_edit_distance(str1: str, str2: str, tolerance: int):
     inf = 1<<29
     dp = [[inf] * (len(str2) + 1) for i in range(len(str1) + 1)]
     dp[0][0] = 0
@@ -102,6 +116,7 @@ def calc_edit_distance(str1: str, str2: str):
     sz2 = len(str2)
 
     for i in range(sz1 + 1):
+        mindp = 1<<29
         for j in range(sz2 + 1):
             # change
             if i > 0 and j > 0:
@@ -116,6 +131,9 @@ def calc_edit_distance(str1: str, str2: str):
             # input
             if j > 0:
                 dp[i][j] = min(dp[i][j], dp[i][j - 1] + 1)
+            mindp = min(mindp, dp[i][j])
+        if mindp > tolerance:
+            return mindp
     
     return dp[len(str1)][len(str2)]
 
